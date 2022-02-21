@@ -57,3 +57,7 @@ Options:
 Commands:
   add-devices  Add devices into NSO
 ```
+
+## Authors
+
+* Santiago Flores Kanter (sfloresk@cisco.com)
