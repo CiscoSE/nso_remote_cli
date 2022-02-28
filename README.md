@@ -1,4 +1,4 @@
-# NSO Remote CLI
+# Network Services Orchestrator Remote CLI
 
 Simple CLI utility to manage NSO remotely from the command line.
 
@@ -42,7 +42,7 @@ Devices added successfully
 ## Install
 
 1. It is strongly recommended to use virtual environments
-2. Install dependencies in requirements.txt
+2. Install dependencies in requirements.txt in any python supported system
 3. Test using nso_remote_cli --help
 
 ```bash
@@ -58,6 +58,8 @@ Commands:
   add-devices  Add devices into NSO
 ```
 
-## Authors
+### Sandbox
+If you do not have a NSO instance available, you can use the [NSO Reservable Sandbox](https://devnetsandbox.cisco.com/RM/Diagram/Index/43964e62-a13c-4929-bde7-a2f68ad6b27c?diagramType=Topology)
+to test the script
 
-* Santiago Flores Kanter (sfloresk@cisco.com)
+If you need to revisit the NSO Basics, you can [start here](https://developer.cisco.com/learning/lab/learn-nso-the-easy-way/step/1). 
