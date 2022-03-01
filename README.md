@@ -1,3 +1,4 @@
+[![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/CiscoSE/nso_remote_cli)
 # Network Services Orchestrator Remote CLI
 
 Simple CLI utility to manage NSO remotely from the command line.
