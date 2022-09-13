@@ -1,7 +1,7 @@
 [![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/CiscoSE/nso_remote_cli)
 # Network Services Orchestrator Remote CLI
 
-Simple CLI utility to manage NSO remotely from the command line.
+CLI utility to manage NSO remotely from the command line.
 
 Credentials can be set using the following environmental variables
 
@@ -13,10 +13,10 @@ NSO_PASSWORD
 
 ## Supported subcommands
 
-### Add devices usage
+### Add devices 
 
 ```bash
-% ./nso_remote_cli add-devices --help
+% ./nso_remote_cli add-devices --help                 
 Usage: nso_remote_cli add-devices [OPTIONS]
 
   Add devices into NSO
@@ -26,7 +26,9 @@ Options:
                                  --print-inventory-example to generate one
                                  [default: ./nso_device_inventory.yaml]
   -e, --print-inventory-example  Print example inventory file
-  --help                         Show this message and exit.
+  -f, --fetch-keys               Fetch devices' SSH keys
+  -s, --sync-from                Sync from devices
+  --help                         Show this message and exit.                      Show this message and exit.
 ```
 
 Parameters can be added to the inventory file as needed, as long as they are defined in the yang models. If you are 
