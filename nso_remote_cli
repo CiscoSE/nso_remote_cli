@@ -36,7 +36,9 @@ def main():
 @click.option('--inventory-file', "-i", show_default=True, default="./nso_device_inventory.yaml",
               help='NSO Inventory file in yaml format. Use --print-inventory-example to generate one')
 @click.option('--print-inventory-example', "-e", help='Print example inventory file', type=bool, is_flag=True)
-def add_devices(inventory_file, print_inventory_example):
+@click.option('--fetch-keys', "-f", help="Fetch devices' SSH keys", type=bool, default=False, is_flag=True)
+@click.option('--sync-from', "-s", help='Sync from devices', type=bool, default=False, is_flag=True)
+def add_devices(inventory_file, print_inventory_example, fetch_keys, sync_from):
     """
     Add devices into NSO
     """
@@ -48,7 +50,7 @@ def add_devices(inventory_file, print_inventory_example):
 # More parameteres can be addded, as long as it is defined in the yang models.
 # If you are not sure how to add your devices with extra settings, you can add one device manually in NSO, 
 # execute "show running-config devices device <name> | de-select config | display json" and convert the output to yaml
-devices:
+tailf-ncs:devices:
   device:
   - name: core-01
     address: 10.0.0.1
@@ -85,29 +87,56 @@ devices:
         # Add devices
         with open(inventory_file, 'r') as inventory_yaml:
             payload = yaml.safe_load(inventory_yaml)
-            _make_nso_request(payload)
+            response = _make_nso_request(payload)
+            if not response.ok:
+                click.echo("Error while sending request to NSO", err=True)
+                click.echo(f"Status code: {response.status_code}", err=True)
+                click.echo(f"Response {response.text}", err=True)
+                click.Abort()
+            click.echo("Devices added successfully")
+            if fetch_keys or sync_from:
+                for device in payload['tailf-ncs:devices']['device']:
+                    if fetch_keys:
+                        click.echo(f"Fetching keys from {device['name']}")
+                        fetch_url = f"/tailf-ncs:devices/device={device['name']}/ssh/fetch-host-keys"
+                        response = _make_nso_request(payload={}, target_url=fetch_url, method="POST")
+                        if not response.ok:
+                            click.echo("Error while sending request to NSO", err=True)
+                            click.echo(f"Status code: {response.status_code}", err=True)
+                            click.echo(f"Response {response.text}", err=True)
+                            click.echo("Moving on to the next device")
+                            continue
+                    if sync_from:
+                        click.echo(f"Executing sync-from for {device['name']}")
+                        sync_from_url = f"/tailf-ncs:devices/device={device['name']}/sync-from"
+                        response = _make_nso_request(payload={}, target_url=sync_from_url, method="POST")
+                        if not response.ok:
+                            click.echo("Error while sending request to NSO", err=True)
+                            click.echo(f"Status code: {response.status_code}", err=True)
+                            click.echo(f"Response {response.text}", err=True)
+                            click.echo("Moving on to the next device")
+                            continue
 
 
-def _make_nso_request(payload):
+def _make_nso_request(payload, target_url=None, method="PATCH"):
     """
     Create a NSO PATCH request with a given payload
     :param payload: dictionary or list to be sent
     :return: None
     """
-    url = f"{os.getenv('NSO_RESTCONF_URL', 'http://localhost:8080/restconf')}/data/"
+    base_url = f"{os.getenv('NSO_RESTCONF_URL', 'http://localhost:8080/restconf')}/data/"
+    if target_url is not None:
+        request_url = f"{base_url}{target_url}"
+    else:
+        request_url = base_url
     username = os.getenv('NSO_USER', 'admin')
     password = os.getenv('NSO_PASSWORD', 'admin')
     headers = {
         'Accept': 'application/yang-data+json',
         'Content-Type': 'application/yang-data+json'
     }
-    response = requests.request("PATCH", url, headers=headers, json=payload, auth=(username, password))
-    if not response.ok:
-        click.echo("Error while sending request to NSO", err=True)
-        click.echo(f"Status code: {response.status_code}", err=True)
-        click.echo(f"Response {response.text}", err=True)
-        click.Abort()
-    click.echo("Devices added successfully")
+    response = requests.request(method, request_url, headers=headers, json=payload, auth=(username, password))
+    return response
 
 
 main.add_command(add_devices)
